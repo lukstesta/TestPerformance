@@ -1,0 +1,27 @@
+project.ext {
+    jacocoCoverageThresholdDefault = 0.60
+
+    testBuildType = 'debug'
+
+    jacocoToolsVersion = "0.8.5"
+
+    jacocoFileFilter = [
+            '**/*$ViewInjector*.*',
+            '**/*$ViewBinder*.*',
+            '**/*Builder.*',
+            '**/*Module*.*',
+            '**/*Binding*.*',
+            '**/*Test*.*',
+            'android/**/*.*',
+            '**/*Args*.*',
+            '**/databinding/**/*.*',
+            '**/android/databinding/*Binding.*',
+            '**/BR.*',
+            '**/R.*',
+            '**/R$*.*',
+            '**/BuildConfig.*',
+            '**/Manifest*.*',
+    ]
+
+    includes = ['**/*.exec', '**/*.ec']
+}

@@ -1,0 +1,70 @@
+apply from: 'jacoco-config.gradle'
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = jacocoToolsVersion
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+}
+
+final unitTreeJava = fileTree(dir: "$buildDir/intermediates/classes/debug", excludes: jacocoFileFilter)
+final unitTreeKotlin = fileTree(dir: "$buildDir/tmp/kotlin-classes/debug", excludes: jacocoFileFilter)
+final uiTree = fileTree(dir: "$buildDir/tmp/kotlin-classes/debug", excludes: jacocoFileFilter)
+final mainSrc = "${project.projectDir}/src/main/java"
+
+task jacocoTestReport(type: JacocoReport, dependsOn: ["test${testBuildType.capitalize()}UnitTest"]) {
+    group = 'verification'
+    description = "Generate Jacoco coverage reports after running tests."
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    sourceDirectories.from = files([mainSrc])
+    classDirectories.from = files([unitTreeJava], [unitTreeKotlin])
+    executionData.from = fileTree(dir: "$buildDir", includes: ["jacoco/test${testBuildType.capitalize()}UnitTest.exec"])
+
+    doLast {
+        println "Relatório dos testes unitários disponibilizado em file://${reports.html.destination}/index.html"
+    }
+}
+
+task jacocoAndroidTestReport(type: JacocoReport, dependsOn: "create${testBuildType.capitalize()}CoverageReport") {
+    group = 'coverage'
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    sourceDirectories.from = files([mainSrc])
+    classDirectories.from = files([uiTree])
+    executionData.from = fileTree(dir: "$buildDir", includes: ['**/*.ec'])
+
+    doLast {
+        println "Relatório dos testes de UI disponibilizado em file://${reports.html.destination}/index.html"
+    }
+}
+
+task jacocoTestCoverageVerification(type: JacocoReport) {
+    group = 'coverage'
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    sourceDirectories.from = files([mainSrc])
+    classDirectories.from = files([uiTree])
+    executionData.from = fileTree(dir: "$buildDir", includes: ["jacoco/test${testBuildType.capitalize()}UnitTest.exec", '**/*.ec'])
+
+    doLast {
+        println "Relatório dos testes unitários e de UI disponibilizado em to file://${reports.html.destination}/index.html"
+    }
+}
+
+tasks.withType(Test) {
+    ignoreFailures = true
+}
+
+check.dependsOn jacocoTestCoverageVerification
